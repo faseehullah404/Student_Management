@@ -43,7 +43,6 @@ These are the intended boundaries. Actual Django validation behavior will be che
 
 I will use:
 
-- Selenium with Python for automated browser/UI testing.
 - pytest and pytest-django for automated unit testing.
 - ECP and BVA for test case design.
 - CSV for data-driven testing.
@@ -51,7 +50,121 @@ I will use:
 
 ## 5. My Work
 
-I will create and execute my assigned student module tests, document the results, and commit my changes to GitHub.
+I have performed automated testing on the Student Module using Python, pytest, and pytest-django.
+
+### 5.1 Student Model Testing
+
+File: `test/test_student_model.py`
+
+Testing Techniques: Equivalence Class Partitioning (ECP) and Boundary Value Analysis (BVA)
+
+ECP Testing:
+
+- Tested valid medium values: Marathi, SemiEng, CBSE, Foundation.
+- Tested invalid medium values: Unknown and empty string.
+- Used `@pytest.mark.parametrize` for multiple test inputs.
+- Result: 6 Passed
+
+BVA Testing:
+
+- Tested Student Standard (`std`) field with boundary values: 0, 1, 2, 9, 10, 11.
+- Used Django field validation to check valid and invalid values.
+- **Result: 2 Passed, 4 Failed**
+- Identified a potential validation bug where valid standard values were rejected.
+- The suspected cause is a mismatch between integer choices and the `CharField` data type.
+- The issue was documented without modifying the original application code.
+
+Command to Run:
+
+```bash
+python -m pytest test/test_student_model.py -v
+```
+
+Screenshots:
+
+- `screenshots/faseeh/student_ecp_passed.png`
+- `screenshots/faseeh/student_bva_failed.png`
+
+### 5.2 Student Profile Update Testing
+
+File: `test/test_student_profile.py`
+
+Function Tested: `s_saveprofile()`
+
+Testing Framework: pytest + pytest-django
+
+Test Case: Student Profile Update
+
+- Created a test student user and student profile.
+- Used Django test client to simulate login.
+- Sent a POST request with updated student information.
+- Verified successful update of first name, last name, email, address, and gender.
+- Verified successful redirection after profile update.
+- Used assertions to compare expected and actual results.
+
+Result: 1 Passed
+
+Command to Run:
+
+```bash
+python -m pytest test/test_student_profile.py -v
+```
+
+Screenshot:
+
+- `screenshots/faseeh/student_profile_update.png`
+
+### 5.3 Student Password Update Testing
+
+File: `test/test_student_profile.py`
+
+Function Tested: `s_saveprofile()`
+
+Testing Technique: Equivalence Class Partitioning (ECP) and Condition Testing
+
+Test Cases:
+
+| Input                  | Expected Result               | Actual Result |
+| ---------------------- | ----------------------------- | ------------- |
+| `None` (field omitted) | Old password unchanged        | PASS          |
+| `""` (empty string)    | Old password unchanged        | PASS          |
+| `" "` (single space)   | Password updated to space     | PASS          |
+| `"NewPass456!"`        | Password updated successfully | PASS          |
+
+Work Performed:
+
+- Used `@pytest.mark.parametrize` to execute four password scenarios.
+- Used Django test client to send profile update requests.
+- Verified passwords using `check_password()`.
+- Confirmed that `None` and empty passwords leave the old password unchanged.
+- Observed that the application accepts whitespace-only passwords, which may be a validation weakness.
+
+Result: 4 Passed
+
+**Command to Run:**
+
+```bash
+python -m pytest test/test_student_profile.py -v
+```
+
+Screenshot: `screenshots/faseeh/student_password_tests.png`
+
+**Command to Run All My Tests:**
+
+```bash
+python -m pytest test/test_student_model.py test/test_student_profile.py -v
+```
+
+### 5.4 Tools Used
+
+- Python
+- pytest
+- pytest-django
+- Django Test Client
+
+All tests were automated using pytest without Selenium.
+
+**Remaining Work:** Student password update testing and further test coverage.
 
 ## Bug Report — Student Standard Validation
 
