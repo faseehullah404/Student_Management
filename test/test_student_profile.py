@@ -103,3 +103,74 @@ def test_student_password_update(client, new_password, expected_password):
     #old password should stop working after an update
     if new_password not in (None, ""):
         assert not user.check_password("OldPass123!")
+
+
+
+from django.contrib.messages import get_messages
+
+
+#test 1: Reject non-POST requests
+@pytest.mark.django_db
+@pytest.mark.parametrize("method", ["get", "put"])
+def test_profile_invalid_method(client, method):
+
+    user = MyUser.objects.create_user(
+        username="methodstudent",
+        password="TestPass123!",
+        user_type="3"
+    )
+
+    client.force_login(user)
+
+    response = getattr(client, method)("/s_saveprofile")
+
+    assert "Method not Allowed" in response.content.decode()
+
+
+#test 2: Invalid student IDs
+@pytest.mark.django_db
+@pytest.mark.parametrize("student_id", [
+    "99999999",      # Nonexistent ID
+    "abc",           # Invalid ID format
+    None             # Missing ID
+])
+def test_profile_invalid_student_id(client, student_id):
+
+    user = MyUser.objects.create_user(
+        username="invalidstudent",
+        email="original@test.com",
+        password="TestPass123!",
+        user_type="3"
+    )
+
+    client.force_login(user)
+
+    data = {
+        "firstname": "Ali",
+        "lastname": "Khan",
+        "email": "changed@test.com",
+        "address": "New Address",
+        "gender": "Male",
+        "password": ""
+    }
+
+    if student_id is not None:
+        data["student_id"] = student_id
+
+    response = client.post("/s_saveprofile", data)
+
+    user.refresh_from_db()
+
+    assert response.status_code == 302
+    assert response.url == "/studentprofile"
+
+    #existing user data should remain unchanged
+    assert user.email == "original@test.com"
+
+    #verify error message
+    messages = [
+        str(message)
+        for message in get_messages(response.wsgi_request)
+    ]
+
+    assert "Failed to update profile" in messages

@@ -50,112 +50,218 @@ I will use:
 
 ## 5. My Work
 
-I have performed automated testing on the Student Module using Python, pytest, and pytest-django.
+**Module:** Student Module
 
-### 5.1 Student Model Testing
+**Application Files:** `Main_App/models.py`, `Main_App/v_student.py`
 
-File: `test/test_student_model.py`
+**Testing Tools:** Python, pytest, pytest-django, Django Test Client
 
-Testing Techniques: Equivalence Class Partitioning (ECP) and Boundary Value Analysis (BVA)
+I performed automated testing of student model validation, profile updates, password handling, invalid requests, and student content filtering.
 
-ECP Testing:
+### 5.1 Student Model Testing — ECP and BVA
 
-- Tested valid medium values: Marathi, SemiEng, CBSE, Foundation.
-- Tested invalid medium values: Unknown and empty string.
-- Used `@pytest.mark.parametrize` for multiple test inputs.
-- Result: 6 Passed
+**Test File:** `test/test_student_model.py`
 
-BVA Testing:
+**Application Code:** `Student` class in `Main_App/models.py`
 
-- Tested Student Standard (`std`) field with boundary values: 0, 1, 2, 9, 10, 11.
-- Used Django field validation to check valid and invalid values.
-- **Result: 2 Passed, 4 Failed**
-- Identified a potential validation bug where valid standard values were rejected.
-- The suspected cause is a mismatch between integer choices and the `CharField` data type.
-- The issue was documented without modifying the original application code.
+**ECP Testing:**
 
-Command to Run:
+- Tested valid medium choices: Marathi, SemiEng, CBSE, Foundation.
+- Tested invalid medium inputs: Unknown and empty string.
+- Used `@pytest.mark.parametrize` and Django's `field.clean()` for validation.
 
-```bash
-python -m pytest test/test_student_model.py -v
-```
+**Result:** 6 Passed
 
-Screenshots:
+**BVA Testing:**
+
+- Tested `std` (student standard/class) with values 0, 1, 2, 9, 10, 11.
+- Checked both lower and upper boundaries.
+- Identified that valid standard values were being rejected during validation.
+
+**Result:** 2 Passed, 4 Failed
+
+**Bug Identified:** The `std` field is a `CharField`, but its choices are defined using integers. This causes a mismatch during field validation when string values are supplied.
+
+**Status:** Bug documented, not fixed.
+
+**Run Command:**
+
+`python -m pytest test/test_student_model.py -v`
+
+**Evidence:**
 
 - `screenshots/faseeh/student_ecp_passed.png`
 - `screenshots/faseeh/student_bva_failed.png`
 
 ### 5.2 Student Profile Update Testing
 
-File: `test/test_student_profile.py`
+**Test File:** `test/test_student_profile.py`
 
-Function Tested: `s_saveprofile()`
+**Function:** `s_saveprofile()`
 
-Testing Framework: pytest + pytest-django
+Tested successful profile updates using the Django test client.
 
-Test Case: Student Profile Update
+**Verified:**
 
-- Created a test student user and student profile.
-- Used Django test client to simulate login.
-- Sent a POST request with updated student information.
-- Verified successful update of first name, last name, email, address, and gender.
-- Verified successful redirection after profile update.
-- Used assertions to compare expected and actual results.
+- First name updated.
+- Last name updated.
+- Email updated.
+- Address updated.
+- Gender updated.
+- Successful redirect to `/studentprofile`.
 
-Result: 1 Passed
+Test data was created in the test database, a POST request was submitted, and updated values were verified using assertions.
 
-Command to Run:
+**Result:** 1 Passed
 
-```bash
-python -m pytest test/test_student_profile.py -v
-```
+**Run Command:**
 
-Screenshot:
+`python -m pytest test/test_student_profile.py -v`
 
-- `screenshots/faseeh/student_profile_update.png`
+**Evidence:** `screenshots/faseeh/student_profile_update.png`
 
 ### 5.3 Student Password Update Testing
 
-File: `test/test_student_profile.py`
+**Test File:** `test/test_student_profile.py`
 
-Function Tested: `s_saveprofile()`
+**Function:** `s_saveprofile()`
 
-Testing Technique: Equivalence Class Partitioning (ECP) and Condition Testing
+**Technique:** ECP and condition testing
 
-Test Cases:
+| Password Input         | Expected Behavior         | Result |
+| ---------------------- | ------------------------- | ------ |
+| `None` (field omitted) | Old password unchanged    | PASS   |
+| `""`                   | Old password unchanged    | PASS   |
+| `" "`                  | Password updated to space | PASS   |
+| `"NewPass456!"`        | New password saved        | PASS   |
 
-| Input                  | Expected Result               | Actual Result |
-| ---------------------- | ----------------------------- | ------------- |
-| `None` (field omitted) | Old password unchanged        | PASS          |
-| `""` (empty string)    | Old password unchanged        | PASS          |
-| `" "` (single space)   | Password updated to space     | PASS          |
-| `"NewPass456!"`        | Password updated successfully | PASS          |
+**Work Performed:**
 
-Work Performed:
-
-- Used `@pytest.mark.parametrize` to execute four password scenarios.
-- Used Django test client to send profile update requests.
+- Tested both branches of the password update condition.
+- Used parameterization for four different scenarios.
 - Verified passwords using `check_password()`.
-- Confirmed that `None` and empty passwords leave the old password unchanged.
-- Observed that the application accepts whitespace-only passwords, which may be a validation weakness.
+- Found that whitespace-only passwords are accepted by the current implementation.
 
-Result: 4 Passed
+**Result:** 4 Passed
 
-**Command to Run:**
+**Run Command:**
 
-```bash
-python -m pytest test/test_student_profile.py -v
-```
+`python -m pytest test/test_student_profile.py -v`
 
-Screenshot: `screenshots/faseeh/student_password_tests.png`
+**Evidence:** `screenshots/faseeh/student_password_tests.png`
 
-**Command to Run All My Tests:**
+### 5.4 Student Profile Negative Testing
 
-```bash
-python -m pytest test/test_student_model.py test/test_student_profile.py -v
-```
+**Test File:** `test/test_student_profile.py`
 
-### 5.4 Tools Used
+**Function:** `s_saveprofile()`
+
+**Technique:** Negative testing and invalid input testing
+
+| Test Case | Input / Condition      | Expected Behavior | Result |
+| --------- | ---------------------- | ----------------- | ------ |
+| TC-01     | GET request            | Update rejected   | PASS   |
+| TC-02     | PUT request            | Update rejected   | PASS   |
+| TC-03     | Nonexistent student ID | Error handled     | PASS   |
+| TC-04     | Non-numeric student ID | Error handled     | PASS   |
+| TC-05     | Missing student ID     | Error handled     | PASS   |
+
+**Work Performed:**
+
+- Tested rejection of non-POST requests.
+- Tested error handling for invalid student identifiers.
+- Verified failure messages and redirects.
+- Confirmed original user email remained unchanged for the tested invalid IDs.
+
+**Result:** 5 Passed
+
+**Run Command:**
+
+`python -m pytest test/test_student_profile.py -v`
+
+**Evidence:** `screenshots/faseeh/student_profile_negative_tests.png`
+
+### 5.5 Student Results and Notes Filtering
+
+**Test File:** `test/test_student_content.py`
+
+**Functions:** `s_viewresult()` and `s_viewnotes()`
+
+Verified that students receive results and notes filtered according to their standard and medium.
+
+| Test Scenario                | Expected Behavior             |
+| ---------------------------- | ----------------------------- |
+| Matching standard and medium | Record included               |
+| Different standard           | Record excluded               |
+| Different medium             | Record excluded               |
+| No records                   | Empty collection              |
+| Multiple matching records    | All matching records included |
+
+The five scenarios were executed for both Results and Notes using parameterization.
+
+**Work Performed:**
+
+- Created temporary student and content records in the test database.
+- Simulated authenticated requests using Django test client.
+- Verified standard and medium filtering.
+- Checked response context using assertions.
+- Tested multiple matching and nonmatching records.
+
+**Result:** 10 Passed
+
+**Run Command:**
+
+`python -m pytest test/test_student_content.py -v`
+
+**Evidence:** `screenshots/faseeh/student_content_tests.png`
+
+### 5.6 Overall Test Execution Results
+
+| Testing Activity                 | Passed | Failed |
+| -------------------------------- | -----: | -----: |
+| Student Model ECP                |      6 |      0 |
+| Student Model BVA                |      2 |      4 |
+| Student Profile Update           |      1 |      0 |
+| Password Condition Testing       |      4 |      0 |
+| Student Profile Negative Testing |      5 |      0 |
+| Results and Notes Filtering      |     10 |      0 |
+| **Total**                        | **28** |  **4** |
+
+**Total Test Executions:** 32
+
+**Known Defect:** Four BVA cases fail due to student standard choice validation.
+
+### 5.7 Commands to Execute Tests
+
+**Student Model — ECP and BVA:**
+
+`python -m pytest test/test_student_model.py -v`
+
+**Student Profile, Password and Negative Tests:**
+
+`python -m pytest test/test_student_profile.py -v`
+
+**Student Results and Notes:**
+
+`python -m pytest test/test_student_content.py -v`
+
+**Run All Student Tests:**
+
+`python -m pytest test/test_student_model.py test/test_student_profile.py test/test_student_content.py -v`
+
+**Expected combined outcome based on recorded executions:** 28 passed, 4 failed.
+
+The failed cases are documented validation defects and have not been removed or changed to force passing results.
+
+### 5.8 Summary of Contribution
+
+I developed automated tests for the Student Module covering model validation, boundary values, profile updates, password conditions, invalid requests, and content filtering.
+
+I used pytest parameterization, Django model validation, Django test client, assertions, and an isolated test database.
+
+The tests identified a potential standard validation defect and demonstrated the current behavior of password and profile handling.
+
+### 5.9 Tools Used
 
 - Python
 - pytest
