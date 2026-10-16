@@ -6,29 +6,27 @@ Student module (`Main_App/v_student.py` and Student class in `Main_App/models.py
 
 I will test student profile updates, input validation, results, and notes.
 
-## 1. ECP (Equivalence Class Partitioning)
+## 1. ECP Student Module
 
-| Test | Input / Condition                                 | Expected Result                     |
-| ---- | ------------------------------------------------- | ----------------------------------- |
-| 1    | Valid student profile data                        | Profile updated successfully        |
-| 2    | Invalid student ID                                | Profile update fails                |
-| 3    | Empty password during profile update              | Existing password remains unchanged |
-| 4    | Non-empty password during profile update          | Password is updated                 |
-| 5    | Valid medium (Marathi, SemiEng, CBSE, Foundation) | Accepted by model validation        |
-| 6    | Invalid medium (Unknown)                          | Rejected by model validation        |
-| 7    | GET request to profile update function            | Method not allowed                  |
+Test Field Equivalence Class (Condition) Expected
+ECP-01 std 1 ≤ std ≤ 10 Valid
+ECP-02 std std < 1 Invalid
+ECP-03 std std > 10 Invalid
+ECP-04 std std is non-numeric Invalid
+ECP-05 medium medium ∈ {Marathi, SemiEng, CBSE, Foundation} Valid
+ECP-06 medium medium ∉ {Marathi, SemiEng, CBSE, Foundation} Invalid
 
-## 2. BVA (Boundary Value Analysis)
+## 2. BVA Student Module
 
 Student class has standard (std) choices from 1 to 10.
 
-| Test | Input       | Expected Result |
-| ---- | ----------- | --------------- |
-| 1    | Standard 0  | Invalid         |
-| 2    | Standard 1  | Valid (minimum) |
-| 3    | Standard 2  | Valid           |
-| 4    | Standard 10 | Valid (maximum) |
-| 5    | Standard 11 | Invalid         |
+Test Field Input Expected
+BVA-01 std 0 (min − 1) Invalid
+BVA-02 std 1 (min) Valid
+BVA-03 std 2 (min + 1) Valid
+BVA-04 std 9 (max − 1) Valid
+BVA-05 std 10 (max) Valid
+BVA-06 std 11 (max + 1) Invalid
 
 These are the intended boundaries. Actual Django validation behavior will be checked through automated tests.
 
@@ -54,3 +52,21 @@ I will use:
 ## 5. My Work
 
 I will create and execute my assigned student module tests, document the results, and commit my changes to GitHub.
+
+## Bug Report — Student Standard Validation
+
+Module: Student (`Main_App/models.py`)
+
+Testing Technique: Boundary Value Analysis (BVA)
+
+Expected Result: Standard values from 1 to 10 should be accepted.
+
+Actual Result: Values 1, 2, 9, and 10 were rejected during field validation.
+
+Test Results: 8 passed, 4 failed (including ECP tests).
+
+Suspected Cause: The `std` field uses `CharField`, while its choices are defined as integers.
+
+Status: Bug identified and documented. Not fixed.
+
+Evidence: `screenshots/faseeh/student_bva_failed.png`
