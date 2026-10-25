@@ -2,167 +2,155 @@
 
 ## Module
 
-Teacher module (`Main_App/v_teacher.py` and Teacher class in `Main_App/models.py`)
+Teacher module (`Main_App/models.py`, `Main_App/v_teacher.py`) and Login (`Main_App/views.py`).
 
-I will test teacher profile updates, input validation, password changes, and access restrictions.
+I tested teacher model validation, profile updates, passwords, results, notes, and access restrictions.
 
 ## 1. ECP Teacher Module
 
 | Test | Field | Equivalence Class (Condition) | Expected |
 |---|---|---|---|
-| ECP-01 | gender | gender ∈ {Male, Female, Other} | Valid |
-| ECP-02 | gender | gender ∉ {Male, Female, Other} | Invalid |
+| ECP-01 | gender | gender is Male, Female, or Other | Valid |
+| ECP-02 | gender | gender is not an allowed choice | Invalid |
 | ECP-03 | address | address is non-empty | Valid |
 | ECP-04 | address | address is empty | Invalid |
 
 ## 2. BVA Teacher Module
 
-Teacher class has a `gender` field with a maximum length of 15 characters.
+The Teacher gender field has `max_length=15`.
 
 | Test | Field | Input | Expected |
 |---|---|---|---|
-| BVA-01 | gender | 14 characters | Within length limit |
-| BVA-02 | gender | 15 characters | Within length limit |
-| BVA-03 | gender | 16 characters | Invalid |
+| BVA-01 | gender length | 14 characters | Within length limit |
+| BVA-02 | gender length | 15 characters | Within length limit |
+| BVA-03 | gender length | 16 characters | Invalid |
 | BVA-04 | address | Empty string | Invalid |
 | BVA-05 | address | Non-empty string | Valid |
 
-These are the intended boundaries. Actual Django validation behavior will be checked through automated tests. Gender choice validation is separate from length validation.
+Gender choice validation is different from length validation. A 14-character string can satisfy the length limit but fail the gender choice rule. The tests check these separately.
 
 ## 3. Other Test Cases
 
-1. Check if teacher profile is updated with correct information.
-2. Check if the teacher password is updated correctly.
-3. Check if an empty password leaves the old password unchanged.
-4. Check if a GET request to the profile update endpoint is rejected.
-5. Check if unauthenticated users are redirected to the login page.
-6. Check if non-teacher users are prevented from accessing teacher-only pages.
-7. Check if invalid teacher details are handled correctly.
+1. Update teacher first name, last name, email, gender, and address.
+2. Check that an empty password keeps the old password.
+3. Check that a new password is saved.
+4. Reject GET requests for profile updates.
+5. Redirect unauthenticated users to the login page.
+6. Show teacher results and notes for different standards and mediums.
+7. Return an empty collection if no content exists.
+8. Test login with valid and invalid credentials.
 
 ## 4. Testing Method
 
-I will use:
-
-- pytest and pytest-django for automated model and view testing.
-- ECP and BVA for test case design.
-- Django test client for profile update and access restriction testing.
-- Parametrized tests for testing multiple input values.
-
-## 5. My Work
-
-I will create and execute my assigned teacher module tests, document the results, and commit my changes to GitHub.
-
-## Test Files
-
-- `test/test_teacher_model.py`
-- `test/test_teacher_profile.py`
-
-## Testing Commands
-
-Run teacher model tests:
-
-```bash
-python -m pytest test/test_teacher_model.py -v
-```
-
-Run teacher profile tests:
-
-```bash
-python -m pytest test/test_teacher_profile.py -v
-```
-
-Run all tests:
-
-```bash
-python -m pytest -v
-```
-
-## Bug Report — Teacher Profile Validation
-
-Module: Teacher (`Main_App/models.py` and `Main_App/v_teacher.py`)
-
-Testing Technique: Equivalence Class Partitioning (ECP) and Boundary Value Analysis (BVA)
-
-Expected Result: Teachers should be able to update their profile with valid details, while invalid input should be handled appropriately.
-
-Actual Result: To be confirmed after executing the teacher profile tests.
-
-Test Results: Model tests passed. Profile tests are pending execution.
-
-Status: Profile testing in progress. Any confirmed bugs will be documented separately.
-
-Evidence: `screenshots/Zohaib/`
-
+- pytest and pytest-django for automated testing.
+- ECP and BVA for input test design.
+- Django test client and test database for profile and content tests.
+- Parameterized tests for several inputs and content scenarios.
+- External CSV data for Task 3.
+- pytest-xdist for Task 4 parallel execution.
 
 ## 5. My Work
-
-I performed automated testing of the Teacher Module using pytest and pytest-django.
 
 ### 5.1 Teacher Model Testing
 
-**Test File:** `test/test_teacher_model.py`
+**Application code:** `Teacher` class in `Main_App/models.py`  
+**Test file:** `test/test_teacher_model.py`
 
-Tested gender equivalence classes, gender length boundaries, default gender, and required address validation.
+Checked allowed and disallowed gender values, gender length 14/15/16, default gender `Other`, and required address validation.
 
-**Result:** 11 test cases passed in the recorded execution.
+Gender length is checked using field validators separately from choices.
 
-**Command:**
+**Result:** 11 passed.
 
-`python -m pytest test/test_teacher_model.py -v`
+**Command:** `python -m pytest test/test_teacher_model.py -v`
+
+**Evidence:**
+- `screenshots/Zohaib/ecp_passed_teacher_module.png`
+- `screenshots/Zohaib/BVA_passed_teacher.png`
 
 ### 5.2 Teacher Profile Testing
 
-**Test File:** `test/test_teacher_profile.py`
+**Function:** `t_saveprofile()` in `Main_App/v_teacher.py`  
+**Test file:** `test/test_teacher_profile.py`
 
-**Function:** `t_saveprofile()`
+Tested successful update, empty password, new password, rejection of GET requests, and unauthenticated access.
 
-Tested successful profile updates, empty password handling, new password updates, rejection of GET requests, and unauthenticated access.
+**Result:** 5 passed.
 
-**Result:** 5 test cases passed in the recorded execution.
+**Command:** `python -m pytest test/test_teacher_profile.py -v`
 
-**Command:**
-
-`python -m pytest test/test_teacher_profile.py -v`
+**Evidence:** `screenshots/Zohaib/teacher_profile_update.png`
 
 ### 5.3 Teacher Results and Notes Testing
 
-**Test File:** `test/test_teacher_content.py`
+**Functions:** `t_viewresult()` and `t_viewnotes()` in `Main_App/v_teacher.py`  
+**Test file:** `test/test_teacher_content.py`
 
-**Functions:** `t_viewresult()` and `t_viewnotes()`
+Tested content with different standards and mediums, no records, multiple records, and access without login. Teacher content pages display the available content rather than filtering it to one teacher's class/medium.
 
-Tested content retrieval, standard and medium variations, empty results, multiple records, and login restrictions.
+**Result:** 12 passed (10 content scenarios and 2 login restriction cases).
 
-**Result:** 12 test cases passed in the recorded execution.
+**Command:** `python -m pytest test/test_teacher_content.py -v`
 
-**Command:**
-
-`python -m pytest test/test_teacher_content.py -v`
+**Evidence:** `screenshots/Zohaib/teacher_content_test.png`
 
 ### 5.4 Login Module Testing
 
-**Application File:** `Main_App/views.py`
+**Function:** `loginuser()` in `Main_App/views.py`
 
-**Function:** `loginuser()`
+I added automated login tests as my contribution to the third application area (Authentication/Login).
 
-I implemented automated tests for the login functionality using pytest.
+The latest login test filename and exact execution results must be copied from the updated GitHub branch. They are not present in the older ZIP used to review the existing Teacher tests.
 
-**Test File:** Add the exact filename of the new login test file.
+**Run login-named tests:** `python -m pytest test/ -k login -v`
 
-**Test Cases and Results:** Add the actual scenarios and passing/failing counts from the latest test execution.
+### 5.5 Task 3 - CSV Data-Driven Testing
 
-**Command:**
+**Test file:** `test/test_task3_zohaib_csv.py`  
+**CSV file:** `test_data/zohaib_teacher_gender.csv`  
+**Excel file:** `Task3_Test_Cases_Simple.xlsx`
 
-`python -m pytest test/<login_test_filename>.py -v`
+| Case | Input | Expected |
+|---|---|---|
+| Z-CSV-01 | Male | Valid |
+| Z-CSV-02 | Female | Valid |
+| Z-CSV-03 | Unknown | Invalid |
+| Z-CSV-04 | Empty string | Invalid |
 
-### 5.5 Existing Teacher Test Summary
+Used `csv.DictReader` to read external data, then checked Django Teacher gender field validation with parameterized pytest cases. Actual results should be entered into the Excel sheet after execution.
 
-| Testing Activity | Passed | Failed |
+**Command:** `python -m pytest test/test_task3_zohaib_csv.py -v`
+
+**Evidence:** `screenshots/Zohaib/task3_csv_tests.png` (if saved with this name).
+
+### 5.6 Existing Teacher Test Summary
+
+| Testing area | Passed | Failed |
 |---|---:|---:|
-| Teacher Model | 11 | 0 |
-| Teacher Profile | 5 | 0 |
-| Teacher Content | 12 | 0 |
-| **Total (before Login tests)** | **28** | **0** |
+| Teacher model | 11 | 0 |
+| Teacher profile | 5 | 0 |
+| Teacher results and notes | 12 | 0 |
+| Total before Login and CSV | 28 | 0 |
 
-Add the new Login Module test count after verifying its execution.
+Login and CSV results should be added from the latest local execution. No confirmed Teacher defect was found in the existing recorded test runs.
 
-**Testing Tools:** Python, pytest, pytest-django, Django Test Client.
+### 5.7 Testing Commands
+
+```powershell
+# Teacher model
+python -m pytest test/test_teacher_model.py -v
+
+# Teacher profile
+python -m pytest test/test_teacher_profile.py -v
+
+# Teacher results and notes
+python -m pytest test/test_teacher_content.py -v
+
+# Login tests (if their names contain 'login')
+python -m pytest test/ -k login -v
+
+# My CSV tests
+python -m pytest test/test_task3_zohaib_csv.py -v
+```
+
+I completed and documented my Teacher tests and contributed Login and CSV testing. I used pytest instead of Selenium.
