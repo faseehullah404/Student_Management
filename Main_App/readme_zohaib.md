@@ -154,3 +154,35 @@ python -m pytest test/test_task3_zohaib_csv.py -v
 ```
 
 I completed and documented my Teacher tests and contributed Login and CSV testing. I used pytest instead of Selenium.
+
+### 5.8 Task 4 - Test Execution
+
+I worked on test suite execution and verification.
+
+**File:**
+- `run_suites.ps1`
+
+**Work Performed:**
+- Verified the execution of separate test groups.
+- Used a PowerShell script to run test suites sequentially.
+- Verified the execution order: Student, Teacher, Authentication, CSV.
+- Tested parallel execution using pytest-xdist.
+- Verified that test execution continues even if an earlier group has failed tests.
+
+**Commands Used:**
+
+Run suites in order:
+
+`powershell -ExecutionPolicy Bypass -File .\run_suites.ps1`
+
+Run tests in parallel:
+
+`python -m pytest test/ -n 2 --dist loadfile -v`
+
+Run Teacher group:
+
+`python -m pytest test/ -m teacher -v`
+
+**Result:** Ordered and parallel test execution commands ran successfully.
+
+Known Student BVA failures remain documented.
