@@ -1,9 +1,14 @@
 *.log
 *.pot
 *.pyc
+.venv
 __pycache__
 __pycache__/
 local_settings.py
 db.sqlite3
 media
 staticfiles
+.venv/
+venv/
+.env
+.pytest_cache
