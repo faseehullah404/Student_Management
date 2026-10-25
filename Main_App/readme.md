@@ -8,55 +8,86 @@ and academic information.
 
 ## 2. Assignment Objective
 
-The objective is to design and implement automated tests for the application
-using Selenium and Python, and to document test scenarios using software
-testing techniques.
+The objective is to build an automated testing solution for the Django Student Management System using pytest and pytest-django.
+
+Three application areas were selected for testing:
+
+1. Student Module — Faseeh
+2. Teacher Module — Zohaib
+3. Authentication/Login Module — Faseeh and Zohaib
 
 ## 3. Testing Tools
 
 - Python
 - Django
-- Selenium WebDriver
 - pytest
-- Git and GitHub
+- pytest-django
+- pytest-xdist for parallel execution
+- unittest.mock for isolated unit tests
+- CSV for external test data
+- Microsoft Excel for test case documentation
+- Git and GitHub for version control
+
+Selenium is not used in this assignment.
 
 ## 4. Testing Approach
 
-We will identify three application modules and design test scenarios
-for their relevant functionality.
-
-The testing notes will use:
+The testing approach includes:
 
 - Equivalence Class Partitioning (ECP)
 - Boundary Value Analysis (BVA)
-- Positive testing
-- Negative testing
+- Positive and negative testing
+- Parameterized automated tests
+- Django model validation tests
+- Django test-client tests
+- Mock-based isolated unit tests
+- Data-driven testing with external CSV files
 
-Browser-based tests will be automated using Selenium WebDriver
-and executed using pytest.
+## 5. Team Contributions
 
-## 5. Test Documentation
+| Member | Assigned Work                                                    |
+| ------ | ---------------------------------------------------------------- |
+| Faseeh | Student Module and EmailAuth.authenticate()                      |
+| Zohaib | Teacher Module and loginuser()                                   |
+| Both   | CSV/Excel documentation, test suites and execution configuration |
 
-- README_Faseeh.md: Faseeh's individual testing notes and contribution.
-- README_Zohaib.md: Zohaib's individual testing notes and contribution.
-- README.md: Shared project and testing documentation.
+Individual testing documentation is stored in:
 
-## 6. Team Workflow
+- `Main_App/readme_faseeh.md`
+- `Main_App/readme_zohaib.md`
 
-Both team members will work through the shared GitHub repository.
+## 6. Test Execution
 
-Each member will maintain their own testing notes, implement their
-allocated tests, and commit their own changes.
+Run Student tests:
 
-Shared documentation and test configuration will be maintained
-collaboratively.
+`python -m pytest test/test_student_model.py test/test_student_profile.py test/test_student_content.py -v`
 
-## 7. Setup and Execution
+Run Teacher tests:
 
-Setup instructions and test execution commands will be added after
-the testing environment and configuration are finalized.
+`python -m pytest test/test_teacher_model.py test/test_teacher_profile.py test/test_teacher_content.py -v`
 
-## 8. Test Results
+Run Email Authentication tests:
 
-Test execution results will be documented after the automated tests
-have been implemented and executed.
+`python -m pytest test/test_email_auth.py -v`
+
+Run all automated tests:
+
+`python -m pytest test/ -v`
+
+## 7. Current Test Results
+
+The Student Module has 32 recorded test executions: 28 passed and 4 failed due to a documented standard validation issue.
+
+The Teacher Module has 28 recorded passing test executions.
+
+Authentication/Login test results must be updated using the latest combined test run.
+
+## 8. Task 3 — External Test Data
+
+Test cases are documented in an Excel workbook, and selected automated tests consume their input data from external CSV files.
+
+Test cases are divided between Faseeh and Zohaib to demonstrate individual contributions.
+
+## 9. Task 4 — Test Configuration
+
+Test suites, execution order, parallel execution and data-driven parameterization will be configured and documented separately.
