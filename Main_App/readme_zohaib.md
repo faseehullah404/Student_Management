@@ -92,3 +92,77 @@ Test Results: Model tests passed. Profile tests are pending execution.
 Status: Profile testing in progress. Any confirmed bugs will be documented separately.
 
 Evidence: `screenshots/Zohaib/`
+
+
+## 5. My Work
+
+I performed automated testing of the Teacher Module using pytest and pytest-django.
+
+### 5.1 Teacher Model Testing
+
+**Test File:** `test/test_teacher_model.py`
+
+Tested gender equivalence classes, gender length boundaries, default gender, and required address validation.
+
+**Result:** 11 test cases passed in the recorded execution.
+
+**Command:**
+
+`python -m pytest test/test_teacher_model.py -v`
+
+### 5.2 Teacher Profile Testing
+
+**Test File:** `test/test_teacher_profile.py`
+
+**Function:** `t_saveprofile()`
+
+Tested successful profile updates, empty password handling, new password updates, rejection of GET requests, and unauthenticated access.
+
+**Result:** 5 test cases passed in the recorded execution.
+
+**Command:**
+
+`python -m pytest test/test_teacher_profile.py -v`
+
+### 5.3 Teacher Results and Notes Testing
+
+**Test File:** `test/test_teacher_content.py`
+
+**Functions:** `t_viewresult()` and `t_viewnotes()`
+
+Tested content retrieval, standard and medium variations, empty results, multiple records, and login restrictions.
+
+**Result:** 12 test cases passed in the recorded execution.
+
+**Command:**
+
+`python -m pytest test/test_teacher_content.py -v`
+
+### 5.4 Login Module Testing
+
+**Application File:** `Main_App/views.py`
+
+**Function:** `loginuser()`
+
+I implemented automated tests for the login functionality using pytest.
+
+**Test File:** Add the exact filename of the new login test file.
+
+**Test Cases and Results:** Add the actual scenarios and passing/failing counts from the latest test execution.
+
+**Command:**
+
+`python -m pytest test/<login_test_filename>.py -v`
+
+### 5.5 Existing Teacher Test Summary
+
+| Testing Activity | Passed | Failed |
+|---|---:|---:|
+| Teacher Model | 11 | 0 |
+| Teacher Profile | 5 | 0 |
+| Teacher Content | 12 | 0 |
+| **Total (before Login tests)** | **28** | **0** |
+
+Add the new Login Module test count after verifying its execution.
+
+**Testing Tools:** Python, pytest, pytest-django, Django Test Client.
