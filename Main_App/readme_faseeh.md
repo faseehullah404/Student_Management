@@ -289,3 +289,47 @@ Suspected Cause: The `std` field uses `CharField`, while its choices are defined
 Status: Bug identified and documented. Not fixed.
 
 Evidence: `screenshots/faseeh/student_bva_failed.png`
+
+### 5.10 Authentication Module Testing
+
+**Module:** Authentication
+
+**Application File:** `Main_App/EmailAuthentication.py`
+
+**Function Tested:** `EmailAuth.authenticate()`
+
+**Test File:** `test/test_email_auth.py`
+
+**Framework:** pytest with unittest.mock
+
+**Testing Technique:** Equivalence Class Partitioning (ECP) and Negative Testing
+
+I created 10 automated unit test cases to verify email-based user authentication.
+
+| Test Case | Input Condition                    | Expected Result |
+| --------- | ---------------------------------- | --------------- |
+| AUTH-01   | Valid email and correct password   | User returned   |
+| AUTH-02   | Valid email and incorrect password | None            |
+| AUTH-03   | Nonexistent email                  | None            |
+| AUTH-04   | Empty email                        | None            |
+| AUTH-05   | Missing email (None)               | None            |
+| AUTH-06   | Empty password                     | None            |
+| AUTH-07   | Missing password (None)            | None            |
+| AUTH-08   | Username instead of email          | None            |
+| AUTH-09   | Incorrect password capitalization  | None            |
+| AUTH-10   | Email with trailing space          | None            |
+
+**Work Performed:**
+
+- Tested the `EmailAuth.authenticate()` method.
+- Used pytest parameterization for multiple credential combinations.
+- Used mocking to isolate authentication logic from the actual database.
+- Verified successful authentication and rejection of invalid credentials.
+
+**Run Command:**
+
+`python -m pytest test/test_email_auth.py -v`
+
+**Test Result:** Record the actual passing/failing count from the latest execution.
+
+**Evidence:** `screenshots/Faseeh/authentication_tests.png` (after saving the screenshot).
