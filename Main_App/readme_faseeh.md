@@ -2,334 +2,248 @@
 
 ## Module
 
-Student module (`Main_App/v_student.py` and Student class in `Main_App/models.py`)
+Student module (`Main_App/models.py`, `Main_App/v_student.py`) and Email Authentication (`Main_App/EmailAuthentication.py`).
 
-I will test student profile updates, input validation, results, and notes.
+I tested student data validation, profile updates, passwords, invalid requests, results, notes, and email authentication.
 
 ## 1. ECP Student Module
 
-Test Field Equivalence Class (Condition) Expected
-ECP-01 std 1 ≤ std ≤ 10 Valid
-ECP-02 std std < 1 Invalid
-ECP-03 std std > 10 Invalid
-ECP-04 std std is non-numeric Invalid
-ECP-05 medium medium ∈ {Marathi, SemiEng, CBSE, Foundation} Valid
-ECP-06 medium medium ∉ {Marathi, SemiEng, CBSE, Foundation} Invalid
+| Test   | Field  | Equivalence Class (Condition)                   | Expected         |
+| ------ | ------ | ----------------------------------------------- | ---------------- |
+| ECP-01 | std    | 1 <= std <= 10                                  | Valid (intended) |
+| ECP-02 | std    | std < 1                                         | Invalid          |
+| ECP-03 | std    | std > 10                                        | Invalid          |
+| ECP-04 | std    | std is non-numeric                              | Invalid          |
+| ECP-05 | medium | medium is Marathi, SemiEng, CBSE, or Foundation | Valid            |
+| ECP-06 | medium | medium is not one of the allowed choices        | Invalid          |
+
+`std` uses a CharField with integer choices. Because of this mismatch, some intended valid values are rejected during actual validation.
 
 ## 2. BVA Student Module
 
-Student class has standard (std) choices from 1 to 10.
+The intended standard choices are 1 to 10.
 
-Test Field Input Expected
-BVA-01 std 0 (min − 1) Invalid
-BVA-02 std 1 (min) Valid
-BVA-03 std 2 (min + 1) Valid
-BVA-04 std 9 (max − 1) Valid
-BVA-05 std 10 (max) Valid
-BVA-06 std 11 (max + 1) Invalid
+| Test   | Field | Input        | Expected |
+| ------ | ----- | ------------ | -------- |
+| BVA-01 | std   | 0 (min - 1)  | Invalid  |
+| BVA-02 | std   | 1 (min)      | Valid    |
+| BVA-03 | std   | 2 (min + 1)  | Valid    |
+| BVA-04 | std   | 9 (max - 1)  | Valid    |
+| BVA-05 | std   | 10 (max)     | Valid    |
+| BVA-06 | std   | 11 (max + 1) | Invalid  |
 
-These are the intended boundaries. Actual Django validation behavior will be checked through automated tests.
+Expected results above describe the intended behavior. Automated tests found four failures.
 
 ## 3. Other Test Cases
 
-1. Check if student profile is updated with correct information.
-2. Check if the student password is updated correctly.
-3. Check if an empty password leaves the old password unchanged.
-4. Check if results are filtered by the student's standard and medium.
-5. Check if notes are filtered by the student's standard and medium.
-6. Check if invalid student details are handled correctly.
+1. Update a student's first name, last name, email, gender, and address.
+2. Keep the old password when the new password is missing or empty.
+3. Update the password when a non-empty password is submitted.
+4. Reject GET and PUT requests for profile updates.
+5. Handle nonexistent, non-numeric, and missing student IDs.
+6. Filter results and notes using the student's standard and medium.
+7. Return no records when there are no matches, and all records when multiple match.
+8. Authenticate a user with an email and password.
 
 ## 4. Testing Method
 
-I will use:
-
-- pytest and pytest-django for automated unit testing.
-- ECP and BVA for test case design.
-- CSV for data-driven testing.
-- pytest-xdist for parallel test execution.
+- pytest and pytest-django for automated testing.
+- ECP, BVA, positive tests, and negative tests.
+- Django test client and a test database for view tests.
+- `unittest.mock` for isolated email authentication tests.
+- `@pytest.mark.parametrize` for multiple input cases.
+- External CSV files for data-driven tests (Task 3).
+- pytest-xdist for parallel execution (Task 4 configuration).
 
 ## 5. My Work
 
-**Module:** Student Module
+### 5.1 Student Model Testing
 
-**Application Files:** `Main_App/models.py`, `Main_App/v_student.py`
+**Application code:** `Student` class in `Main_App/models.py`  
+**Test file:** `test/test_student_model.py`
 
-**Testing Tools:** Python, pytest, pytest-django, Django Test Client
+ECP tested four valid and two invalid values of the `medium` field using Django's `field.clean()`.
 
-I performed automated testing of student model validation, profile updates, password handling, invalid requests, and student content filtering.
+BVA tested `std` with 0, 1, 2, 9, 10, and 11 using `field.clean()`.
 
-### 5.1 Student Model Testing — ECP and BVA
+**Results:** Medium ECP: 6 passed. Standard BVA: 2 passed, 4 failed.
 
-**Test File:** `test/test_student_model.py`
-
-**Application Code:** `Student` class in `Main_App/models.py`
-
-**ECP Testing:**
-
-- Tested valid medium choices: Marathi, SemiEng, CBSE, Foundation.
-- Tested invalid medium inputs: Unknown and empty string.
-- Used `@pytest.mark.parametrize` and Django's `field.clean()` for validation.
-
-**Result:** 6 Passed
-
-**BVA Testing:**
-
-- Tested `std` (student standard/class) with values 0, 1, 2, 9, 10, 11.
-- Checked both lower and upper boundaries.
-- Identified that valid standard values were being rejected during validation.
-
-**Result:** 2 Passed, 4 Failed
-
-**Bug Identified:** The `std` field is a `CharField`, but its choices are defined using integers. This causes a mismatch during field validation when string values are supplied.
-
-**Status:** Bug documented, not fixed.
-
-**Run Command:**
-
-`python -m pytest test/test_student_model.py -v`
+**Command:** `python -m pytest test/test_student_model.py -v`
 
 **Evidence:**
 
-- `screenshots/faseeh/student_ecp_passed.png`
-- `screenshots/faseeh/student_bva_failed.png`
+- `screenshots/Faseeh/ecp_passedmodule1.png`
+- `screenshots/Faseeh/bvafailedmodule1.png`
 
 ### 5.2 Student Profile Update Testing
 
-**Test File:** `test/test_student_profile.py`
+**Application function:** `s_saveprofile()` in `Main_App/v_student.py`  
+**Test file:** `test/test_student_profile.py`
 
-**Function:** `s_saveprofile()`
+Created a student in the test database and sent a POST request using Django test client. Verified updates to first name, last name, email, address, gender, and redirect.
 
-Tested successful profile updates using the Django test client.
+**Result:** 1 passed.
 
-**Verified:**
+**Command:** `python -m pytest test/test_student_profile.py -v`
 
-- First name updated.
-- Last name updated.
-- Email updated.
-- Address updated.
-- Gender updated.
-- Successful redirect to `/studentprofile`.
+**Evidence:** `screenshots/Faseeh/student_profile_update_success.png`
 
-Test data was created in the test database, a POST request was submitted, and updated values were verified using assertions.
+### 5.3 Student Password Testing
 
-**Result:** 1 Passed
+**Function:** `s_saveprofile()`  
+**Test file:** `test/test_student_profile.py`
 
-**Run Command:**
+| Password input       | Expected behavior             | Result |
+| -------------------- | ----------------------------- | ------ |
+| None (field omitted) | Old password stays the same   | Pass   |
+| Empty string (`""`)  | Old password stays the same   | Pass   |
+| Single space (`" "`) | Password changes to one space | Pass   |
+| `NewPass456!`        | Password is updated           | Pass   |
 
-`python -m pytest test/test_student_profile.py -v`
+Used `check_password()` to verify the stored password. Accepting a space-only password is a possible validation weakness.
 
-**Evidence:** `screenshots/faseeh/student_profile_update.png`
+**Result:** 4 passed.
 
-### 5.3 Student Password Update Testing
+**Command:** `python -m pytest test/test_student_profile.py -v`
 
-**Test File:** `test/test_student_profile.py`
+**Evidence:** `screenshots/Faseeh/student_password_tests.png`
 
-**Function:** `s_saveprofile()`
+### 5.4 Student Profile Negative Tests
 
-**Technique:** ECP and condition testing
+**Function:** `s_saveprofile()`  
+**Test file:** `test/test_student_profile.py`
 
-| Password Input         | Expected Behavior         | Result |
-| ---------------------- | ------------------------- | ------ |
-| `None` (field omitted) | Old password unchanged    | PASS   |
-| `""`                   | Old password unchanged    | PASS   |
-| `" "`                  | Password updated to space | PASS   |
-| `"NewPass456!"`        | New password saved        | PASS   |
+| Test   | Input                  | Expected behavior | Result |
+| ------ | ---------------------- | ----------------- | ------ |
+| NEG-01 | GET request            | Update rejected   | Pass   |
+| NEG-02 | PUT request            | Update rejected   | Pass   |
+| NEG-03 | Nonexistent student ID | Error handled     | Pass   |
+| NEG-04 | Non-numeric student ID | Error handled     | Pass   |
+| NEG-05 | Missing student ID     | Error handled     | Pass   |
 
-**Work Performed:**
+Verified the response, redirect, error message where applicable, and that the original email did not change for invalid IDs.
 
-- Tested both branches of the password update condition.
-- Used parameterization for four different scenarios.
-- Verified passwords using `check_password()`.
-- Found that whitespace-only passwords are accepted by the current implementation.
+**Result:** 5 passed.
 
-**Result:** 4 Passed
+**Command:** `python -m pytest test/test_student_profile.py -v`
 
-**Run Command:**
+**Evidence:** `screenshots/Faseeh/student_profile_negative_tests.png`
 
-`python -m pytest test/test_student_profile.py -v`
+### 5.5 Student Results and Notes Testing
 
-**Evidence:** `screenshots/faseeh/student_password_tests.png`
+**Functions:** `s_viewresult()` and `s_viewnotes()` in `Main_App/v_student.py`  
+**Test file:** `test/test_student_content.py`
 
-### 5.4 Student Profile Negative Testing
+| Scenario                  | Expected behavior        |
+| ------------------------- | ------------------------ |
+| Same standard and medium  | Record is returned       |
+| Different standard        | Record is excluded       |
+| Different medium          | Record is excluded       |
+| No records                | Empty list               |
+| Multiple matching records | All matches are returned |
 
-**Test File:** `test/test_student_profile.py`
+The five scenarios were run for both functions using parameterization and Django test client.
 
-**Function:** `s_saveprofile()`
+**Result:** 10 passed (5 results tests and 5 notes tests).
 
-**Technique:** Negative testing and invalid input testing
+**Command:** `python -m pytest test/test_student_content.py -v`
 
-| Test Case | Input / Condition      | Expected Behavior | Result |
-| --------- | ---------------------- | ----------------- | ------ |
-| TC-01     | GET request            | Update rejected   | PASS   |
-| TC-02     | PUT request            | Update rejected   | PASS   |
-| TC-03     | Nonexistent student ID | Error handled     | PASS   |
-| TC-04     | Non-numeric student ID | Error handled     | PASS   |
-| TC-05     | Missing student ID     | Error handled     | PASS   |
+**Evidence:** `screenshots/Faseeh/student_content_tests.png`
 
-**Work Performed:**
+### 5.6 Student Module Test Summary
 
-- Tested rejection of non-POST requests.
-- Tested error handling for invalid student identifiers.
-- Verified failure messages and redirects.
-- Confirmed original user email remained unchanged for the tested invalid IDs.
+| Testing area           | Passed | Failed |
+| ---------------------- | -----: | -----: |
+| Medium ECP             |      6 |      0 |
+| Standard BVA           |      2 |      4 |
+| Profile update         |      1 |      0 |
+| Password handling      |      4 |      0 |
+| Negative profile tests |      5 |      0 |
+| Results and notes      |     10 |      0 |
+| Total                  |     28 |      4 |
 
-**Result:** 5 Passed
+**Total executions:** 32.
 
-**Run Command:**
+**Command to run Student tests:**
 
-`python -m pytest test/test_student_profile.py -v`
+```powershell
+python -m pytest test/test_student_model.py test/test_student_profile.py test/test_student_content.py -v
+```
 
-**Evidence:** `screenshots/faseeh/student_profile_negative_tests.png`
+### 5.7 Bug Report - Student Standard Validation
 
-### 5.5 Student Results and Notes Filtering
+**Module:** `Student` in `Main_App/models.py`  
+**Technique:** BVA
 
-**Test File:** `test/test_student_content.py`
+**Expected:** Values 1 through 10 should be valid standards.  
+**Actual:** Values 1, 2, 9, and 10 were rejected in the BVA tests.  
+**Suspected cause:** The `std` field is a `CharField`, but its choices are integers.  
+**Status:** Documented, not fixed.  
+**Evidence:** `screenshots/Faseeh/bvafailedmodule1.png`
 
-**Functions:** `s_viewresult()` and `s_viewnotes()`
+### 5.8 Email Authentication Testing
 
-Verified that students receive results and notes filtered according to their standard and medium.
+**Application function:** `EmailAuth.authenticate()` in `Main_App/EmailAuthentication.py`  
+**Test file:** `test/test_email_auth.py`  
+**Technique:** ECP, negative testing, and mocking
 
-| Test Scenario                | Expected Behavior             |
-| ---------------------------- | ----------------------------- |
-| Matching standard and medium | Record included               |
-| Different standard           | Record excluded               |
-| Different medium             | Record excluded               |
-| No records                   | Empty collection              |
-| Multiple matching records    | All matching records included |
+| Test    | Condition                  | Expected      |
+| ------- | -------------------------- | ------------- |
+| AUTH-01 | Valid email and password   | User returned |
+| AUTH-02 | Wrong password             | None          |
+| AUTH-03 | Unknown email              | None          |
+| AUTH-04 | Empty email                | None          |
+| AUTH-05 | Missing email              | None          |
+| AUTH-06 | Empty password             | None          |
+| AUTH-07 | Missing password           | None          |
+| AUTH-08 | Username instead of email  | None          |
+| AUTH-09 | Wrong password letter case | None          |
+| AUTH-10 | Email with trailing space  | None          |
 
-The five scenarios were executed for both Results and Notes using parameterization.
+Used mock user and database objects to test the actual `authenticate()` method without accessing a real database.
 
-**Work Performed:**
+**Cases written:** 10. Record the actual test result from the latest run.
 
-- Created temporary student and content records in the test database.
-- Simulated authenticated requests using Django test client.
-- Verified standard and medium filtering.
-- Checked response context using assertions.
-- Tested multiple matching and nonmatching records.
+**Command:** `python -m pytest test/test_email_auth.py -v`
 
-**Result:** 10 Passed
+**Evidence:** `screenshots/Faseeh/authentication_tests.png` (if saved with this name).
 
-**Run Command:**
+### 5.9 Task 3 - CSV Data-Driven Testing
 
-`python -m pytest test/test_student_content.py -v`
+**Test file:** `test/test_task3_faseeh_csv.py`  
+**CSV file:** `test_data/faseeh_student_medium.csv`  
+**Excel file:** `Task3_Test_Cases_Simple.xlsx`
 
-**Evidence:** `screenshots/faseeh/student_content_tests.png`
+| Case     | Input        | Expected |
+| -------- | ------------ | -------- |
+| F-CSV-01 | Marathi      | Valid    |
+| F-CSV-02 | CBSE         | Valid    |
+| F-CSV-03 | Unknown      | Invalid  |
+| F-CSV-04 | Empty string | Invalid  |
 
-### 5.6 Overall Test Execution Results
+Used Python's `csv.DictReader` to load external values. pytest parameterization runs one test case for each CSV row. Actual results should be copied into the Excel sheet after execution.
 
-| Testing Activity                 | Passed | Failed |
-| -------------------------------- | -----: | -----: |
-| Student Model ECP                |      6 |      0 |
-| Student Model BVA                |      2 |      4 |
-| Student Profile Update           |      1 |      0 |
-| Password Condition Testing       |      4 |      0 |
-| Student Profile Negative Testing |      5 |      0 |
-| Results and Notes Filtering      |     10 |      0 |
-| **Total**                        | **28** |  **4** |
+**Command:** `python -m pytest test/test_task3_faseeh_csv.py -v`
 
-**Total Test Executions:** 32
+**Evidence:** `screenshots/Faseeh/task3_csv_tests.png` (if saved with this name).
 
-**Known Defect:** Four BVA cases fail due to student standard choice validation.
+### 5.10 Commands and Contribution
 
-### 5.7 Commands to Execute Tests
+```powershell
+# Student model
+python -m pytest test/test_student_model.py -v
 
-**Student Model — ECP and BVA:**
+# Student profile, passwords, and invalid requests
+python -m pytest test/test_student_profile.py -v
 
-`python -m pytest test/test_student_model.py -v`
+# Student results and notes
+python -m pytest test/test_student_content.py -v
 
-**Student Profile, Password and Negative Tests:**
+# Email authentication
+python -m pytest test/test_email_auth.py -v
 
-`python -m pytest test/test_student_profile.py -v`
+# My CSV tests
+python -m pytest test/test_task3_faseeh_csv.py -v
+```
 
-**Student Results and Notes:**
-
-`python -m pytest test/test_student_content.py -v`
-
-**Run All Student Tests:**
-
-`python -m pytest test/test_student_model.py test/test_student_profile.py test/test_student_content.py -v`
-
-**Expected combined outcome based on recorded executions:** 28 passed, 4 failed.
-
-The failed cases are documented validation defects and have not been removed or changed to force passing results.
-
-### 5.8 Summary of Contribution
-
-I developed automated tests for the Student Module covering model validation, boundary values, profile updates, password conditions, invalid requests, and content filtering.
-
-I used pytest parameterization, Django model validation, Django test client, assertions, and an isolated test database.
-
-The tests identified a potential standard validation defect and demonstrated the current behavior of password and profile handling.
-
-### 5.9 Tools Used
-
-- Python
-- pytest
-- pytest-django
-- Django Test Client
-
-All tests were automated using pytest without Selenium.
-
-**Remaining Work:** Student password update testing and further test coverage.
-
-## Bug Report — Student Standard Validation
-
-Module: Student (`Main_App/models.py`)
-
-Testing Technique: Boundary Value Analysis (BVA)
-
-Expected Result: Standard values from 1 to 10 should be accepted.
-
-Actual Result: Values 1, 2, 9, and 10 were rejected during field validation.
-
-Test Results: 8 passed, 4 failed (including ECP tests).
-
-Suspected Cause: The `std` field uses `CharField`, while its choices are defined as integers.
-
-Status: Bug identified and documented. Not fixed.
-
-Evidence: `screenshots/faseeh/student_bva_failed.png`
-
-### 5.10 Authentication Module Testing
-
-**Module:** Authentication
-
-**Application File:** `Main_App/EmailAuthentication.py`
-
-**Function Tested:** `EmailAuth.authenticate()`
-
-**Test File:** `test/test_email_auth.py`
-
-**Framework:** pytest with unittest.mock
-
-**Testing Technique:** Equivalence Class Partitioning (ECP) and Negative Testing
-
-I created 10 automated unit test cases to verify email-based user authentication.
-
-| Test Case | Input Condition                    | Expected Result |
-| --------- | ---------------------------------- | --------------- |
-| AUTH-01   | Valid email and correct password   | User returned   |
-| AUTH-02   | Valid email and incorrect password | None            |
-| AUTH-03   | Nonexistent email                  | None            |
-| AUTH-04   | Empty email                        | None            |
-| AUTH-05   | Missing email (None)               | None            |
-| AUTH-06   | Empty password                     | None            |
-| AUTH-07   | Missing password (None)            | None            |
-| AUTH-08   | Username instead of email          | None            |
-| AUTH-09   | Incorrect password capitalization  | None            |
-| AUTH-10   | Email with trailing space          | None            |
-
-**Work Performed:**
-
-- Tested the `EmailAuth.authenticate()` method.
-- Used pytest parameterization for multiple credential combinations.
-- Used mocking to isolate authentication logic from the actual database.
-- Verified successful authentication and rejection of invalid credentials.
-
-**Run Command:**
-
-`python -m pytest test/test_email_auth.py -v`
-
-**Test Result:** Record the actual passing/failing count from the latest execution.
-
-**Evidence:** `screenshots/Faseeh/authentication_tests.png` (after saving the screenshot).
+I wrote automated tests, recorded the outcomes, documented the BVA defect, and contributed the email authentication and CSV tests. I did not use Selenium.
