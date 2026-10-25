@@ -1,0 +1,5 @@
+case_id,value,expected
+Z-CSV-01,Male,valid
+Z-CSV-02,Female,valid
+Z-CSV-03,Unknown,invalid
+Z-CSV-04,,invalid
