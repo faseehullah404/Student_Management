@@ -1,10 +1,18 @@
 *.log
 *.pot
 *.pyc
+.venv
 __pycache__
 __pycache__/
 local_settings.py
 db.sqlite3
 media
 staticfiles
+<<<<<<< HEAD
+.venv/
+venv/
+.env
+.pytest_cache
+=======
 .zip
+>>>>>>> 8eaca21bc78c61d4480d9066278a1d97692f44ed
