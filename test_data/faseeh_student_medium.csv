@@ -1,0 +1,5 @@
+case_id,value,expected
+F-CSV-01,Marathi,valid
+F-CSV-02,CBSE,valid
+F-CSV-03,Unknown,invalid
+F-CSV-04,,invalid
