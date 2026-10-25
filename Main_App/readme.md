@@ -115,13 +115,85 @@ The tests read the CSV files using `csv.DictReader` and use pytest parameterizat
 
 ## 9. Task 4 - Test Configuration
 
-Task 4 requires suites/groups, parameterization, parallel execution, and execution order. The following files are prepared separately and should be tested before marking the task complete:
+We configured pytest to run tests in different groups, execute them in order, and support parallel testing.
 
-- `pytest.ini` - pytest configuration and suite markers
-- `test/conftest.py` - groups tests by module and orders collection
-- `run_suites.ps1` - runs each test group in a fixed order
+### 9.1 Test Groups
 
-Sequential runs provide a predictable order. Parallel execution using `pytest-xdist` does not guarantee the exact completion order of individual test cases.
+Tests are divided into four groups:
+
+| Group   | Tests                                     |
+| ------- | ----------------------------------------- |
+| student | Student model, profile, results and notes |
+| teacher | Teacher model, profile, results and notes |
+| auth    | Authentication and login                  |
+| csvdata | External CSV-based tests                  |
+
+**Configuration Files:**
+
+- `pytest.ini` - Defines the test markers and Django settings.
+- `test/conftest.py` - Assigns tests to groups and sets collection order.
+- `run_suites.ps1` - Runs the test groups in a fixed sequence.
+
+### 9.2 Test Group Commands
+
+Student tests:
+
+`python -m pytest test/ -m student -v`
+
+Teacher tests:
+
+`python -m pytest test/ -m teacher -v`
+
+Authentication tests:
+
+`python -m pytest test/ -m auth -v`
+
+CSV tests:
+
+`python -m pytest test/ -m csvdata -v`
+
+### 9.3 Execution Order
+
+The test groups run in this order:
+
+1. Student
+2. Teacher
+3. Authentication
+4. CSV
+
+Command:
+
+`powershell -ExecutionPolicy Bypass -File .\run_suites.ps1`
+
+The PowerShell script executes each group sequentially, even if an earlier group has failing tests. The `conftest.py` file also defines a predictable collection order within groups.
+
+### 9.4 Parallel Testing
+
+We used pytest-xdist to execute tests using two workers.
+
+Command:
+
+`python -m pytest test/ -n 2 --dist loadfile -v`
+
+The `-n 2` option uses two workers, and `--dist loadfile` groups tests from the same file onto one worker.
+
+Parallel execution does not guarantee a fixed completion order.
+
+### 9.5 Test Parameterization
+
+We used `@pytest.mark.parametrize` to execute the same test with different input values.
+
+Parameterization was used in Student, Teacher, Authentication and CSV-based tests.
+
+The CSV tests read external test data using Python's `csv.DictReader`.
+
+### 9.6 Execution Results
+
+Test grouping, collection order, sequential execution and parallel execution were tested successfully.
+
+The four previously identified Student BVA failures remain documented and were not modified.
+
+Task 4 configuration and execution verification are complete.
 
 ## 10. Submission Notes
 
